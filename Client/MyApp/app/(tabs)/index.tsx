@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ShoppingCart, ChevronRight, Search } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const COLORS = {
   primary: "#013DA4",
@@ -57,13 +57,13 @@ export default function RemaHomeScreen() {
         />
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.searchButton}>
-            <Search size={20} color={COLORS.primary} />
+            <Ionicons name="search" size={20} color={COLORS.primary} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.cartButton}
             onPress={() => router.push('/shoppingcart')}
           >
-            <ShoppingCart size={20} color={COLORS.primary} />
+            <Ionicons name="cart-outline" size={20} color={COLORS.primary} />
             {cartCount > 0 && (
               <View style={styles.cartBadge}>
                 <Text style={styles.cartBadgeText}>{cartCount}</Text>
@@ -111,7 +111,7 @@ export default function RemaHomeScreen() {
                 </Text>
               </View>
             </View>
-            <ChevronRight size={16} color={COLORS.primary} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
           </View>
         </View>
 
@@ -136,7 +136,7 @@ export default function RemaHomeScreen() {
                 <Text style={styles.promotionTitle}>{promo.title}</Text>
                 <Text style={styles.promotionSubtitle}>{promo.subtitle}</Text>
               </View>
-              <ChevronRight size={16} color={COLORS.primary} />
+              <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
             </View>
           ))}
         </View>
@@ -199,6 +199,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: COLORS.white,
+    // Remove any paddingTop since SafeAreaView handles it
   },
   container: {
     flex: 1,
