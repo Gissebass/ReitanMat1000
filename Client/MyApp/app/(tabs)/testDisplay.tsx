@@ -1,8 +1,7 @@
-// app/(tabs)/testDisplay.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import { useSmoothedImageDataUri, DEFAULT_URL } from "../../lib/getLastImage";
-import { decodeBarcodeFromDataUri } from "../../lib/getLastBarcode";
+import { decodeQrFromDataUri } from "../../lib/getLastQr";
 
 export default function TestDisplay() {
   // Live view settings
@@ -10,14 +9,19 @@ export default function TestDisplay() {
   const timeoutMs = 800;  // per fetch timeout
   const bufferMs = 100;   // jitter buffer for smoothness
 
-  const { dataUri, error } = useSmoothedImageDataUri(DEFAULT_URL, targetFps, timeoutMs, bufferMs);
+  const { dataUri, error } = useSmoothedImageDataUri(
+    DEFAULT_URL,
+    targetFps,
+    timeoutMs,
+    bufferMs
+  );
 
-  // Barcode result state
-  const [lastBarcode, setLastBarcode] = useState<string | null>(null);
+  // QR result state
+  const [lastQR, setLastQR] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
 
   // Throttle scanning so we don't scan every single frame
-  const scanEveryMs = 200; // was 150
+  const scanEveryMs = 200;
   const lastScanTs = useRef(0);
   const inflight = useRef(false);
 
@@ -31,11 +35,11 @@ export default function TestDisplay() {
     lastScanTs.current = now;
     setScanning(true);
 
-    decodeBarcodeFromDataUri(dataUri)
+    decodeQrFromDataUri(dataUri)
       .then((text) => {
-        if (text) setLastBarcode(text);
-        // keep previous result if none found — comment next line if you want to clear instead
-        // else setLastBarcode(null);
+        if (text) setLastQR(text);
+        // else keep previous result (comment next line if you prefer clearing)
+        // else setLastQR(null);
       })
       .finally(() => {
         inflight.current = false;
@@ -45,7 +49,7 @@ export default function TestDisplay() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Live Camera Feed</Text>
+      <Text style={styles.title}>Live Camera Feed (QR)</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       {dataUri ? (
@@ -55,9 +59,9 @@ export default function TestDisplay() {
       )}
 
       <View style={styles.resultRow}>
-        <Text style={styles.label}>Last barcode:</Text>
+        <Text style={styles.label}>Last QR:</Text>
         <Text style={styles.value}>
-          {lastBarcode ?? "No barcode detected"}
+          {lastQR ?? "No QR detected"}
           {scanning ? "  (scanning…)" : ""}
         </Text>
       </View>
