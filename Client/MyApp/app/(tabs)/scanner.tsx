@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
+import { REMA_COLORS } from "@/constants/theme";
 
 interface ScannedData {
   value: string;
@@ -30,16 +31,6 @@ interface BarcodeScannedEvent {
   data: string;
   type: string;
 }
-
-const REMA_COLORS = {
-  primary: "#013DA4",
-  secondary: "#FFFFFF",
-  accent: "#A7C5E7",
-  lightBg: "#DCE9F5",
-  text: "#555555",
-  success: "#B2D1BD",
-  warning: "#F4C6CB",
-};
 
 export default function BarcodeScannerApp(): React.ReactElement {
   const [permission, requestPermission] = useCameraPermissions();
