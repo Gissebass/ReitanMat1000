@@ -4,24 +4,18 @@ import { useSmoothedImageDataUri, DEFAULT_URL } from "../../lib/getLastImage";
 import { decodeQrFromDataUri } from "../../lib/getLastQr";
 
 export default function TestDisplay() {
-  // Live view settings
-  const targetFps = 25;   // display cadence
-  const timeoutMs = 800;  // per fetch timeout
-  const bufferMs = 100;   // jitter buffer for smoothness
+  // Keep UI light; image fetch is cheap, decoding is the heavy part.
+  const targetFps = 20;
+  const timeoutMs = 600;
+  const bufferMs = 80;
 
-  const { dataUri, error } = useSmoothedImageDataUri(
-    DEFAULT_URL,
-    targetFps,
-    timeoutMs,
-    bufferMs
-  );
+  const { dataUri, error } = useSmoothedImageDataUri(DEFAULT_URL, targetFps, timeoutMs, bufferMs);
 
-  // QR result state
   const [lastQR, setLastQR] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
 
-  // Throttle scanning so we don't scan every single frame
-  const scanEveryMs = 200;
+  // Fast scan cadence with strict no-overlap
+  const scanEveryMs = 150;
   const lastScanTs = useRef(0);
   const inflight = useRef(false);
 
@@ -35,23 +29,27 @@ export default function TestDisplay() {
     lastScanTs.current = now;
     setScanning(true);
 
-    decodeQrFromDataUri(dataUri)
-      .then((text) => {
-        if (text) setLastQR(text);
-        // else keep previous result (comment next line if you prefer clearing)
-        // else setLastQR(null);
-      })
-      .finally(() => {
-        inflight.current = false;
-        setScanning(false);
-      });
+    // Let the frame paint before decoding (avoids UI stalls)
+    setTimeout(() => {
+      decodeQrFromDataUri(dataUri)
+        .then((text) => {
+          if (text) setLastQR(text);
+        })
+        .catch((e) => {
+          // eslint-disable-next-line no-console
+          console.warn("decode QR error:", e);
+        })
+        .finally(() => {
+          inflight.current = false;
+          setScanning(false);
+        });
+    }, 0);
   }, [dataUri]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Live Camera Feed (QR)</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
-
       {dataUri ? (
         <Image source={{ uri: dataUri }} style={styles.image} resizeMode="contain" />
       ) : (

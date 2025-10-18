@@ -27,11 +27,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="scanner"
+        name="shoppingCart"
         options={{
-          title: "Scanner",
+          title: "Shopping Cart",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="qrcode" color={color} />
+            <IconSymbol size={28} name="cart.fill" color={color} />
           ),
         }}
       />
@@ -40,7 +40,7 @@ export default function TabLayout() {
         options={{
           title: "Handletur",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="cart.fill" color={color} />
+            <IconSymbol size={28} name="qrcode" color={color} />
           ),
         }}
       />
