@@ -4,18 +4,18 @@ import { useSmoothedImageDataUri, DEFAULT_URL } from "../../lib/getLastImage";
 import { decodeQrFromDataUri } from "../../lib/getLastQr";
 
 export default function TestDisplay() {
-  // Display settings (keep lightweight)
+  // Keep UI light; image fetch is cheap, decoding is the heavy part.
   const targetFps = 20;
-  const timeoutMs = 800;
-  const bufferMs = 100;
+  const timeoutMs = 600;
+  const bufferMs = 80;
 
   const { dataUri, error } = useSmoothedImageDataUri(DEFAULT_URL, targetFps, timeoutMs, bufferMs);
 
   const [lastQR, setLastQR] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
 
-  // Decode throttle (fast but not constant)
-  const scanEveryMs = 400;
+  // Fast scan cadence with strict no-overlap
+  const scanEveryMs = 150;
   const lastScanTs = useRef(0);
   const inflight = useRef(false);
 
@@ -29,13 +29,16 @@ export default function TestDisplay() {
     lastScanTs.current = now;
     setScanning(true);
 
-    // Let the frame paint before heavy work
+    // Let the frame paint before decoding (avoids UI stalls)
     setTimeout(() => {
       decodeQrFromDataUri(dataUri)
         .then((text) => {
           if (text) setLastQR(text);
         })
-        .catch((e) => console.warn("decode QR error:", e))
+        .catch((e) => {
+          // eslint-disable-next-line no-console
+          console.warn("decode QR error:", e);
+        })
         .finally(() => {
           inflight.current = false;
           setScanning(false);
@@ -52,6 +55,7 @@ export default function TestDisplay() {
       ) : (
         <Text>Loading…</Text>
       )}
+
       <View style={styles.resultRow}>
         <Text style={styles.label}>Last QR:</Text>
         <Text style={styles.value}>
