@@ -17,8 +17,6 @@ import {
   Platform,
   SafeAreaView,
 } from "react-native";
-import { getLastImage } from "../getLastImage";
-import REMA1000_horisontal_logo from "@/assets/images/logos/REMA1000_horisontal_logo.png";
 
 /**
  * Rema 1000 Shopping Cart - Brand Guidelines Compliant
