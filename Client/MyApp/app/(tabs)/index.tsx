@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ShoppingCart, ChevronRight, Search } from "lucide-react-native";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const COLORS = {
   primary: "#013DA4",
@@ -52,18 +52,18 @@ export default function RemaHomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Image
+          source={require('@/assets/images/logos/REMA1000_horisontal_logo.png')}
           style={styles.headerTitle}
-          source={require("../../assets/images/logos/REMA1000_horisontal_logo.png")}
         />
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.searchButton}>
-            <Search color={COLORS.primary} size={20} />
+            <IconSymbol name="magnifyingglass" size={20} color={COLORS.primary} />
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity 
             style={styles.cartButton}
-            onPress={() => router.push("/shoppingcart")}
+            onPress={() => router.push('/shoppingcart')}
           >
-            <ShoppingCart color={COLORS.primary} size={20} />
+            <IconSymbol name="cart.fill" size={20} color={COLORS.primary} />
             {cartCount > 0 && (
               <View style={styles.cartBadge}>
                 <Text style={styles.cartBadgeText}>{cartCount}</Text>
@@ -73,58 +73,55 @@ export default function RemaHomeScreen() {
         </View>
       </View>
 
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        {/* Barcode Scanner Section */}
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Scanner Section */}
         <View style={styles.scannerSection}>
           <View style={styles.scannerBox}>
-            <Text style={styles.scannerLabel}>STREKKODEN DIN</Text>
+            <Text style={styles.scannerLabel}>SKANN VARER</Text>
             <View style={styles.barcodeContainer}>
               <View style={styles.barcode}>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((bar) => (
+                {[...Array(8)].map((_, i) => (
                   <View
-                    key={bar}
+                    key={i}
                     style={[
                       styles.barcodeLine,
-                      {
-                        width: Math.random() * 4 + 2,
-                        marginHorizontal: 2,
-                      },
+                      { width: Math.random() > 0.5 ? 2 : 4 },
                     ]}
                   />
                 ))}
               </View>
             </View>
-            <Text style={styles.scannerHint}>Klikk for mer informasjon</Text>
+            <Text style={styles.scannerHint}>
+              Hold kameraet over strekkoden
+            </Text>
           </View>
         </View>
 
-        {/* Bonus Account Section */}
+        {/* Bonus Section */}
         <View style={styles.bonusSection}>
-          <TouchableOpacity style={styles.bonusCard}>
+          <View style={styles.bonusCard}>
             <View style={styles.bonusLeft}>
               <View style={styles.bonusIcon}>
-                <Text style={styles.star}>★</Text>
+                <Text style={styles.star}>⭐</Text>
               </View>
               <View>
-                <Text style={styles.bonusTitle}>0 kr på din bonuskonto</Text>
-                <Text style={styles.bonusSubtitle}>Bruk bonusen din</Text>
+                <Text style={styles.bonusTitle}>Du har 0 bonuspoeng</Text>
+                <Text style={styles.bonusSubtitle}>
+                  Handla for 100 kr til for å få 10 poeng
+                </Text>
               </View>
             </View>
-            <ChevronRight color={COLORS.primary} size={20} />
-          </TouchableOpacity>
+            <IconSymbol name="chevron.forward" size={16} color={COLORS.primary} />
+          </View>
         </View>
 
         {/* Categories */}
         <View style={styles.categoriesSection}>
           <View style={styles.categoryGrid}>
-            {categories.map((cat) => (
-              <TouchableOpacity key={cat.id} style={styles.categoryCard}>
-                <Text style={styles.categoryIcon}>{cat.icon}</Text>
-                <Text style={styles.categoryName}>{cat.name}</Text>
+            {categories.map((category) => (
+              <TouchableOpacity key={category.id} style={styles.categoryCard}>
+                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <Text style={styles.categoryName}>{category.name}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -132,48 +129,31 @@ export default function RemaHomeScreen() {
 
         {/* Promotions */}
         <View style={styles.promotionsSection}>
-          <Text style={styles.sectionTitle}>
-            REMA 1000 ER MESTVINNENDE I PRISTESTER
-          </Text>
+          <Text style={styles.sectionTitle}>Tilbud</Text>
           {promotions.map((promo) => (
-            <TouchableOpacity key={promo.id} style={styles.promotionCard}>
+            <View key={promo.id} style={styles.promotionCard}>
               <View style={styles.promotionContent}>
                 <Text style={styles.promotionTitle}>{promo.title}</Text>
                 <Text style={styles.promotionSubtitle}>{promo.subtitle}</Text>
               </View>
-              <ChevronRight color={COLORS.primary} size={24} />
-            </TouchableOpacity>
+              <IconSymbol name="chevron.forward" size={16} color={COLORS.primary} />
+            </View>
           ))}
         </View>
 
         {/* Featured Products */}
         <View style={styles.featuredSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>UTVALGTE VARER</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAll}>Se alle →</Text>
-            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>Anbefalt for deg</Text>
+            <Text style={styles.seeAll}>Se alle</Text>
           </View>
-
           <View style={styles.productCard}>
             <View style={styles.productImage} />
             <View style={styles.productInfo}>
-              <Text style={styles.productName}>FILTERM KJELDSBERG</Text>
-              <Text style={styles.productDesc}>KJELDSBERG, 250 G</Text>
+              <Text style={styles.productName}>REMA 1000 Kaffe</Text>
+              <Text style={styles.productDesc}>Mørk brent, hele bønner</Text>
               <View style={styles.priceContainer}>
-                <Text style={styles.productPrice}>34.90</Text>
-                <Text style={styles.priceUnit}>kr</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.productCard}>
-            <View style={styles.productImage} />
-            <View style={styles.productInfo}>
-              <Text style={styles.productName}>LAKS LENKE U/SKINN</Text>
-              <Text style={styles.productDesc}>FISKERIET, 500 G</Text>
-              <View style={styles.priceContainer}>
-                <Text style={styles.productPrice}>79.00</Text>
+                <Text style={styles.productPrice}>89</Text>
                 <Text style={styles.priceUnit}>kr</Text>
               </View>
             </View>
@@ -182,31 +162,31 @@ export default function RemaHomeScreen() {
 
         {/* Features */}
         <View style={styles.featuresSection}>
-          <Text style={styles.sectionTitle}>NYHET! ALLERGENSKANNER</Text>
-          <TouchableOpacity style={styles.featureCard}>
+          <View style={styles.featureCard}>
             <View style={styles.featureBg} />
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>ALLERGENSKANNER</Text>
-              <Text style={styles.featureDesc}>Er du allergisk mot noe?</Text>
+              <Text style={styles.featureTitle}>Handla smart med appen</Text>
+              <Text style={styles.featureDesc}>
+                Få tilbud, sjekk priser og handla enkelt
+              </Text>
               <TouchableOpacity style={styles.featureButton}>
-                <Text style={styles.featureButtonText}>ÅPNE →</Text>
+                <Text style={styles.featureButtonText}>Lær mer</Text>
               </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Recipes */}
+        {/* Recipe */}
         <View style={styles.recipeSection}>
-          <Text style={styles.sectionTitle}>UKEMENY PÅ 1-2-3</Text>
-          <TouchableOpacity style={styles.recipeCard}>
+          <View style={styles.recipeCard}>
             <View style={styles.recipeBg} />
             <View style={styles.recipeContent}>
-              <Text style={styles.recipeTitle}>UKEMENY</Text>
+              <Text style={styles.recipeTitle}>Oppskrifter</Text>
               <Text style={styles.recipeDesc}>
-                Ukens inspirerende oppskrifter
+                Finn inspirasjon til middag
               </Text>
             </View>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.spacer} />
@@ -219,6 +199,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: COLORS.white,
+    // Remove any paddingTop since SafeAreaView handles it
   },
   container: {
     flex: 1,
