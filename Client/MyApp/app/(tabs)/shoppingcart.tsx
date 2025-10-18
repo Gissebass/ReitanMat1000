@@ -17,6 +17,7 @@ import {
   Platform,
   SafeAreaView,
 } from "react-native";
+import { RemaBrandHeader } from "@/components/ui/RemaBrandHeader";
 
 /**
  * Rema 1000 Shopping Cart - Brand Guidelines Compliant
@@ -88,196 +89,30 @@ async function decodeBarcodeFromImage(
   }
 }
 
-export default function RemaScanToCartScreen() {
-  const [cart, setCart] = useState<Record<string, CartLine>>({});
-  const [lastImage, setLastImage] = useState<string | undefined>();
-  const [manualBarcode, setManualBarcode] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const undoStack = useRef<string[]>([]);
-  const imageQueueRef = useRef<HTMLImageElement[]>([]);
-  const processingRef = useRef(false);
-
-  const { itemCount, subtotal } = useMemo(() => {
-    const lines = Object.values(cart);
-    const count = lines.reduce((acc, l) => acc + l.qty, 0);
-    const sum = lines.reduce((acc, l) => acc + l.qty * l.product.price, 0);
-    return { itemCount: count, subtotal: round2(sum) };
-  }, [cart]);
-
-  const handleScanned = useCallback(
-    async (barcode: string, imageUrl?: string) => {
-      if (!barcode) return;
-      if (imageUrl) setLastImage(imageUrl);
-
-      const product = await lookupProduct(barcode);
-      if (!product) {
-        Alert.alert("Fant ikke varen", `Strekkode: ${barcode}`);
-        return;
-      }
-
-      setCart((prev) => {
-        const existing = prev[barcode];
-        const nextQty = existing ? existing.qty + 1 : 1;
-        return {
-          ...prev,
-          [barcode]: { product, qty: nextQty },
-        };
-      });
-
-      undoStack.current.push(barcode);
-    },
-    []
-  );
-
-  const processImageFromScanner = useCallback(
-    async (imgElement: HTMLImageElement) => {
-      if (processingRef.current) {
-        imageQueueRef.current.push(imgElement);
-        return;
-      }
-
-      processingRef.current = true;
-      setIsProcessing(true);
-
-      try {
-        const barcode = await decodeBarcodeFromImage(imgElement);
-        if (barcode) {
-          await handleScanned(barcode, imgElement.src);
-        }
-
-        if (imageQueueRef.current.length > 0) {
-          const nextImg = imageQueueRef.current.shift();
-          if (nextImg) {
-            setTimeout(() => processImageFromScanner(nextImg), 100);
-          }
-        }
-      } catch (error) {
-        console.warn("Image processing error:", error);
-      } finally {
-        processingRef.current = false;
-        setIsProcessing(false);
-      }
-    },
-    [handleScanned]
-  );
-
-  const increment = (barcode: string) =>
-    setCart((prev) => ({
-      ...prev,
-      [barcode]: { ...prev[barcode], qty: prev[barcode].qty + 1 },
-    }));
-
-  const decrement = (barcode: string) =>
-    setCart((prev) => {
-      const line = prev[barcode];
-      if (!line) return prev;
-      const nextQty = Math.max(0, line.qty - 1);
-      const clone = { ...prev };
-      if (nextQty === 0) delete clone[barcode];
-      else clone[barcode] = { ...line, qty: nextQty };
-      return clone;
-    });
-
-  const removeLine = (barcode: string) =>
-    setCart((prev) => {
-      const clone = { ...prev };
-      delete clone[barcode];
-      return clone;
-    });
-
-  const clearCart = () => setCart({});
-
-  const undoLast = () => {
-    const last = undoStack.current.pop();
-    if (!last) return;
-    decrement(last);
-  };
-
-  const onSubmitManual = () => {
-    handleScanned(manualBarcode.trim());
-    setManualBarcode("");
-  };
-
-  const data = Object.values(cart).sort((a, b) =>
-    a.product.name.localeCompare(b.product.name)
-  );
-
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Header itemCount={itemCount} subtotal={subtotal} />
-
-        <ScannerPanel
-          lastImage={lastImage}
-          isProcessing={isProcessing}
-          manualBarcode={manualBarcode}
-          onManualChange={setManualBarcode}
-          onManualSubmit={onSubmitManual}
-        />
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>HANDLEKURV</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <PillButton label="Angre siste" onPress={undoLast} />
-            <PillButton label="Tøm" onPress={clearCart} />
-          </View>
-        </View>
-
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.product.barcode}
-          contentContainerStyle={{ paddingBottom: 32 }}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          renderItem={({ item }) => (
-            <CartRow
-              line={item}
-              onInc={() => increment(item.product.barcode)}
-              onDec={() => decrement(item.product.barcode)}
-              onRemove={() => removeLine(item.product.barcode)}
-            />
-          )}
-          ListEmptyComponent={() => (
-            <View style={styles.emptyWrap}>
-              <Text style={styles.emptyText}>
-                Skann en vare for å legge den i handlekurven.
-              </Text>
-            </View>
-          )}
-        />
-
-        <CheckoutBar
-          subtotal={subtotal}
-          onCheckout={() =>
-            Alert.alert("Betaling", "Her kobler du på betaling/kasse.")
-          }
-        />
-      </View>
-    </SafeAreaView>
-  );
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
 }
 
-// -------------------- UI Components --------------------
-
-function Header({
-  itemCount,
-  subtotal,
-}: {
-  itemCount: number;
-  subtotal: number;
-}) {
-  return (
-    <View style={styles.header}>
-      <Image
-        style={styles.mainLogo}
-        source={require("../../assets/images/logos/REMA1000_horisontal_logo.png")}
-      />
-      <View style={{ alignItems: "flex-end", flex: 1 }}>
-        <Text style={styles.headerMeta}>{itemCount} VARER</Text>
-        <Text style={styles.headerTotal}>{formatCurrency(subtotal)}</Text>
-      </View>
-    </View>
-  );
+function formatCurrency(n: number) {
+  try {
+    return new Intl.NumberFormat("nb-NO", {
+      style: "currency",
+      currency: "NOK",
+    }).format(n);
+  } catch {
+    return `${n.toFixed(2)} kr`;
+  }
 }
+
+// REMA Brand Colors
+const COLORS = {
+  primary: "#013DA4",
+  lightBlue: "#DCE9F5",
+  mediumBlue: "#A7C5E7",
+  white: "#FFFFFF",
+  darkText: "#013DA4",
+  lightText: "#555555",
+};
 
 interface ScannerPanelProps {
   lastImage?: string;
@@ -407,74 +242,190 @@ function PillButton({
   );
 }
 
-// -------------------- Utils & Styles --------------------
+export default function RemaScanToCartScreen() {
+  const [cart, setCart] = useState<Record<string, CartLine>>({});
+  const [lastImage, setLastImage] = useState<string | undefined>();
+  const [manualBarcode, setManualBarcode] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const undoStack = useRef<string[]>([]);
+  const imageQueueRef = useRef<HTMLImageElement[]>([]);
+  const processingRef = useRef(false);
 
-function round2(n: number) {
-  return Math.round(n * 100) / 100;
+  const { itemCount, subtotal } = useMemo(() => {
+    const lines = Object.values(cart);
+    const count = lines.reduce((acc, l) => acc + l.qty, 0);
+    const sum = lines.reduce((acc, l) => acc + l.qty * l.product.price, 0);
+    return { itemCount: count, subtotal: round2(sum) };
+  }, [cart]);
+
+  const handleScanned = useCallback(
+    async (barcode: string, imageUrl?: string) => {
+      if (!barcode) return;
+      if (imageUrl) setLastImage(imageUrl);
+
+      const product = await lookupProduct(barcode);
+      if (!product) {
+        Alert.alert("Fant ikke varen", `Strekkode: ${barcode}`);
+        return;
+      }
+
+      setCart((prev) => {
+        const existing = prev[barcode];
+        const nextQty = existing ? existing.qty + 1 : 1;
+        return {
+          ...prev,
+          [barcode]: { product, qty: nextQty },
+        };
+      });
+
+      undoStack.current.push(barcode);
+    },
+    []
+  );
+
+  const processImageFromScanner = useCallback(
+    async (imgElement: HTMLImageElement) => {
+      if (processingRef.current) {
+        imageQueueRef.current.push(imgElement);
+        return;
+      }
+
+      processingRef.current = true;
+      setIsProcessing(true);
+
+      try {
+        const barcode = await decodeBarcodeFromImage(imgElement);
+        if (barcode) {
+          await handleScanned(barcode, imgElement.src);
+        }
+
+        if (imageQueueRef.current.length > 0) {
+          const nextImg = imageQueueRef.current.shift();
+          if (nextImg) {
+            setTimeout(() => processImageFromScanner(nextImg), 100);
+          }
+        }
+      } catch (error) {
+        console.warn("Image processing error:", error);
+      } finally {
+        processingRef.current = false;
+        setIsProcessing(false);
+      }
+    },
+    [handleScanned]
+  );
+
+  const increment = (barcode: string) =>
+    setCart((prev) => ({
+      ...prev,
+      [barcode]: { ...prev[barcode], qty: prev[barcode].qty + 1 },
+    }));
+
+  const decrement = (barcode: string) =>
+    setCart((prev) => {
+      const line = prev[barcode];
+      if (!line) return prev;
+      const nextQty = Math.max(0, line.qty - 1);
+      const clone = { ...prev };
+      if (nextQty === 0) delete clone[barcode];
+      else clone[barcode] = { ...line, qty: nextQty };
+      return clone;
+    });
+
+  const removeLine = (barcode: string) =>
+    setCart((prev) => {
+      const clone = { ...prev };
+      delete clone[barcode];
+      return clone;
+    });
+
+  const clearCart = () => setCart({});
+
+  const undoLast = () => {
+    const last = undoStack.current.pop();
+    if (!last) return;
+    decrement(last);
+  };
+
+  const onSubmitManual = () => {
+    const trimmedBarcode = manualBarcode.trim();
+
+    if (trimmedBarcode) {
+      // If there's text in the field, use it as barcode
+      handleScanned(trimmedBarcode);
+    } else {
+      // If field is empty, pick a random item from catalog
+      const barcodes = Object.keys(MOCK_CATALOG);
+      const randomBarcode =
+        barcodes[Math.floor(Math.random() * barcodes.length)];
+      handleScanned(randomBarcode);
+    }
+
+    setManualBarcode("");
+  };
+
+  const data = Object.values(cart).sort((a, b) =>
+    a.product.name.localeCompare(b.product.name)
+  );
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      {/* Header */}
+      <RemaBrandHeader showCart={false} showSearch={false} />
+
+      <View style={styles.container}>
+        <ScannerPanel
+          lastImage={lastImage}
+          isProcessing={isProcessing}
+          manualBarcode={manualBarcode}
+          onManualChange={setManualBarcode}
+          onManualSubmit={onSubmitManual}
+        />
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>HANDLEKURV</Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <PillButton label="Angre siste" onPress={undoLast} />
+            <PillButton label="Tøm" onPress={clearCart} />
+          </View>
+        </View>
+
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.product.barcode}
+          contentContainerStyle={{ paddingBottom: 32 }}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          renderItem={({ item }) => (
+            <CartRow
+              line={item}
+              onInc={() => increment(item.product.barcode)}
+              onDec={() => decrement(item.product.barcode)}
+              onRemove={() => removeLine(item.product.barcode)}
+            />
+          )}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyText}>
+                Skann en vare for å legge den i handlekurven.
+              </Text>
+            </View>
+          )}
+        />
+
+        <CheckoutBar
+          subtotal={subtotal}
+          onCheckout={() =>
+            Alert.alert("Betaling", "Her kobler du på betaling/kasse.")
+          }
+        />
+      </View>
+    </SafeAreaView>
+  );
 }
-
-function formatCurrency(n: number) {
-  try {
-    return new Intl.NumberFormat("nb-NO", {
-      style: "currency",
-      currency: "NOK",
-    }).format(n);
-  } catch {
-    return `${n.toFixed(2)} kr`;
-  }
-}
-
-// REMA Brand Colors
-const COLORS = {
-  primary: "#013DA4", // Primary Blue
-  lightBlue: "#DCE9F5", // Light Blue
-  mediumBlue: "#A7C5E7", // Medium Blue
-  white: "#FFFFFF",
-  darkText: "#013DA4",
-  lightText: "#555555",
-};
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.lightBlue },
-  container: { flex: 1, padding: 16, gap: 12 },
-
-  mainLogo: {
-    height: 80,
-    width: 200,
-    resizeMode: "contain",
-    marginRight: 16,
-  },
-
-  // Header
-  header: {
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
-    padding: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-    minHeight: 80,
-  },
-  brand: {
-    fontSize: 28,
-    fontWeight: "900",
-    letterSpacing: 1,
-    color: COLORS.primary,
-  },
-  headerMeta: {
-    fontSize: 12,
-    color: COLORS.lightText,
-    fontWeight: "600",
-  },
-  headerTotal: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: COLORS.primary,
-  },
+  container: { flex: 1, paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
 
   // Scanner Panel
   scannerWrap: {
@@ -485,22 +436,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
-  },
-  scannerHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
-    backgroundColor: COLORS.lightBlue,
-  },
-  scannerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.primary,
-  },
-  scannerHint: {
-    fontSize: 12,
-    color: COLORS.lightText,
-    marginTop: 4,
   },
   scannerBody: { padding: 20, gap: 12 },
   scanImage: { width: "100%", height: 160, borderRadius: 12 },

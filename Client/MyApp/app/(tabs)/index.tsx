@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { RemaBrandHeader } from "@/components/ui/RemaBrandHeader";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const COLORS = {
@@ -21,7 +22,7 @@ const COLORS = {
   border: "#E5E7EB",
 };
 
-export default function RemaHomeScreen() {
+export default function HomeScreen() {
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
 
@@ -50,50 +51,37 @@ export default function RemaHomeScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
-      <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/logos/REMA1000_horisontal_logo.png')}
-          style={styles.headerTitle}
-        />
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.searchButton}>
-            <IconSymbol name="magnifyingglass" size={20} color={COLORS.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.cartButton}
-            onPress={() => router.push('/shoppingcart')}
-          >
-            <IconSymbol name="cart.fill" size={20} color={COLORS.primary} />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <RemaBrandHeader
+        showCart={true}
+        cartCount={cartCount}
+        onCartPress={() => router.push("/shoppingcart")}
+        onSearchPress={() => {
+          /* handle search */
+        }}
+      />
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Scanner Section */}
+        {/* Barcode Scanner Section */}
         <View style={styles.scannerSection}>
           <View style={styles.scannerBox}>
-            <Text style={styles.scannerLabel}>SKANN VARER</Text>
+            <Text style={styles.scannerLabel}>STREKKODEN DIN</Text>
             <View style={styles.barcodeContainer}>
               <View style={styles.barcode}>
-                {[...Array(8)].map((_, i) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((bar) => (
                   <View
-                    key={i}
+                    key={bar}
                     style={[
                       styles.barcodeLine,
-                      { width: Math.random() > 0.5 ? 2 : 4 },
+                      {
+                        width: Math.random() * 4 + 2,
+                        marginHorizontal: 2,
+                      },
                     ]}
                   />
                 ))}
               </View>
             </View>
-            <Text style={styles.scannerHint}>
-              Hold kameraet over strekkoden
-            </Text>
+            <Text style={styles.scannerHint}>Klikk for mer informasjon</Text>
           </View>
         </View>
 
@@ -111,7 +99,11 @@ export default function RemaHomeScreen() {
                 </Text>
               </View>
             </View>
-            <IconSymbol name="chevron.forward" size={16} color={COLORS.primary} />
+            <IconSymbol
+              name="chevron.forward"
+              size={16}
+              color={COLORS.primary}
+            />
           </View>
         </View>
 
@@ -136,7 +128,11 @@ export default function RemaHomeScreen() {
                 <Text style={styles.promotionTitle}>{promo.title}</Text>
                 <Text style={styles.promotionSubtitle}>{promo.subtitle}</Text>
               </View>
-              <IconSymbol name="chevron.forward" size={16} color={COLORS.primary} />
+              <IconSymbol
+                name="chevron.forward"
+                size={16}
+                color={COLORS.primary}
+              />
             </View>
           ))}
         </View>
@@ -182,9 +178,7 @@ export default function RemaHomeScreen() {
             <View style={styles.recipeBg} />
             <View style={styles.recipeContent}>
               <Text style={styles.recipeTitle}>Oppskrifter</Text>
-              <Text style={styles.recipeDesc}>
-                Finn inspirasjon til middag
-              </Text>
+              <Text style={styles.recipeDesc}>Finn inspirasjon til middag</Text>
             </View>
           </View>
         </View>
@@ -198,57 +192,11 @@ export default function RemaHomeScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    // Remove any paddingTop since SafeAreaView handles it
+    backgroundColor: COLORS.lightBlue,
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-  },
-
-  // Header
-  header: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    height: 80,
-    width: 200,
-    resizeMode: "contain",
-    marginRight: 16,
-  },
-  headerRight: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  searchButton: {
-    padding: 8,
-  },
-  cartButton: {
-    padding: 8,
-    position: "relative",
-  },
-  cartBadge: {
-    position: "absolute",
-    top: -2,
-    right: -2,
-    backgroundColor: "#DC2626",
-    borderRadius: 10,
-    width: 18,
-    height: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cartBadgeText: {
-    color: COLORS.white,
-    fontSize: 10,
-    fontWeight: "700",
+    backgroundColor: COLORS.lightBlue,
   },
 
   // Scanner Section
@@ -256,7 +204,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   scannerBox: {
-    backgroundColor: COLORS.lightBlue,
+    backgroundColor: COLORS.white,
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
@@ -291,7 +239,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   bonusCard: {
-    backgroundColor: COLORS.lightBlue,
+    backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 16,
     flexDirection: "row",
@@ -339,7 +287,7 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: "48%",
-    backgroundColor: COLORS.lightBlue,
+    backgroundColor: COLORS.white,
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: "center",
@@ -410,7 +358,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   productCard: {
-    backgroundColor: COLORS.lightBlue,
+    backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 12,
     marginBottom: 10,
@@ -518,11 +466,11 @@ const styles = StyleSheet.create({
   recipeTitle: {
     fontSize: 18,
     fontWeight: "900",
-    color: COLORS.white,
+    color: COLORS.lightBlue,
   },
   recipeDesc: {
     fontSize: 12,
-    color: COLORS.lightBlue,
+    color: COLORS.white,
     marginTop: 4,
   },
 
