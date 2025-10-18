@@ -4,24 +4,18 @@ import { useSmoothedImageDataUri, DEFAULT_URL } from "../../lib/getLastImage";
 import { decodeQrFromDataUri } from "../../lib/getLastQr";
 
 export default function TestDisplay() {
-  // Live view settings
-  const targetFps = 25;   // display cadence
-  const timeoutMs = 800;  // per fetch timeout
-  const bufferMs = 100;   // jitter buffer for smoothness
+  // Display settings (keep lightweight)
+  const targetFps = 20;
+  const timeoutMs = 800;
+  const bufferMs = 100;
 
-  const { dataUri, error } = useSmoothedImageDataUri(
-    DEFAULT_URL,
-    targetFps,
-    timeoutMs,
-    bufferMs
-  );
+  const { dataUri, error } = useSmoothedImageDataUri(DEFAULT_URL, targetFps, timeoutMs, bufferMs);
 
-  // QR result state
   const [lastQR, setLastQR] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
 
-  // Throttle scanning so we don't scan every single frame
-  const scanEveryMs = 200;
+  // Decode throttle (fast but not constant)
+  const scanEveryMs = 400;
   const lastScanTs = useRef(0);
   const inflight = useRef(false);
 
@@ -35,29 +29,29 @@ export default function TestDisplay() {
     lastScanTs.current = now;
     setScanning(true);
 
-    decodeQrFromDataUri(dataUri)
-      .then((text) => {
-        if (text) setLastQR(text);
-        // else keep previous result (comment next line if you prefer clearing)
-        // else setLastQR(null);
-      })
-      .finally(() => {
-        inflight.current = false;
-        setScanning(false);
-      });
+    // Let the frame paint before heavy work
+    setTimeout(() => {
+      decodeQrFromDataUri(dataUri)
+        .then((text) => {
+          if (text) setLastQR(text);
+        })
+        .catch((e) => console.warn("decode QR error:", e))
+        .finally(() => {
+          inflight.current = false;
+          setScanning(false);
+        });
+    }, 0);
   }, [dataUri]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Live Camera Feed (QR)</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
-
       {dataUri ? (
         <Image source={{ uri: dataUri }} style={styles.image} resizeMode="contain" />
       ) : (
         <Text>Loading…</Text>
       )}
-
       <View style={styles.resultRow}>
         <Text style={styles.label}>Last QR:</Text>
         <Text style={styles.value}>
