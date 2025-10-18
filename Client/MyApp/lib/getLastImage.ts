@@ -1,4 +1,4 @@
-// app/getLastImage.ts
+// Client/MyApp/lib/getLastImage.ts
 import { useEffect, useRef, useState } from "react";
 
 export const DEFAULT_URL = "http://192.168.4.1/capture.jpg";
@@ -34,11 +34,6 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
  * Smooth, adaptive pipeline:
  *  - Producer: fetches continuously and fills a tiny queue (jitter buffer).
  *  - Consumer: ticks at targetFps, showing the newest frame (dropping stale ones).
- *
- * Params:
- *  - targetFps: display cadence (e.g., 20–30)
- *  - timeoutMs: per-request timeout (lower to avoid stalls, e.g., 600–1000)
- *  - bufferMs: size of jitter buffer (e.g., 80–150 ms). Higher = smoother, higher latency.
  */
 export function useSmoothedImageDataUri(
   url: string = DEFAULT_URL,
@@ -58,7 +53,6 @@ export function useSmoothedImageDataUri(
 
     // ---- Producer: continuous fetch loop ----
     (async function produce() {
-      // rough max queue size based on bufferMs and targetFps
       const maxFrames = Math.max(1, Math.round((bufferMs / 1000) * Math.max(1, targetFps)) + 1);
 
       while (running.current) {
@@ -66,7 +60,6 @@ export function useSmoothedImageDataUri(
           const uri = await fetchImageDataUri(url, timeoutMs);
           if (!running.current) break;
 
-          // keep only the most recent frames (drop older to cap latency)
           const q = queue.current;
           q.push(uri);
           if (q.length > maxFrames) q.splice(0, q.length - maxFrames);
@@ -75,10 +68,8 @@ export function useSmoothedImageDataUri(
         } catch (e: any) {
           if (!running.current) break;
           setError(e?.message ?? "Fetch failed");
-          // brief backoff on error
           await new Promise((r) => setTimeout(r, 100));
         }
-        // Immediately loop (no fixed wait): adaptive to network speed
       }
     })();
 
@@ -88,11 +79,9 @@ export function useSmoothedImageDataUri(
       const q = queue.current;
       if (q.length === 0) return;
 
-      // show newest available frame; drop stale ones
       const newest = q[q.length - 1];
       q.length = 0;
 
-      // throttle React updates if they’re too frequent (optional)
       const now = Date.now();
       if (now - lastShown.current >= intervalMs * 0.5) {
         lastShown.current = now;
