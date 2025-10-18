@@ -1,112 +1,314 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Fonts } from '@/constants/theme';
 
-export default function TabTwoScreen() {
+type TabType = 'oktober' | 'year' | 'total' | 'history';
+
+const MONTHS = [
+  'Januar', 'Februar', 'Mars', 'April', 'Mai', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'Desember'
+];
+
+export default function HandleturScreen() {
+  const colorScheme = useColorScheme();
+  const [activeTab, setActiveTab] = useState<TabType>('oktober');
+  const [selectedMonth, setSelectedMonth] = useState('Oktober');
+
+  const isDark = colorScheme === 'dark';
+  const backgroundColor = '#E8F1F8'; // Lighter blue
+  const cardBackground = '#FFFFFF';
+  const tabContainerBg = '#DCE9F5'; // Previous main background color
+  const activeTabBg = '#FFFFFF';
+  const inactiveTabBg = 'transparent';
+  const titleColor = '#003380'; // Dark blue
+  const textColor = '#013DA4';
+  const subtleTextColor = '#555555';
+  const activeTabTextColor = '#013DA4';
+  const inactiveTabTextColor = '#013DA4';
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={{ alignItems: 'flex-start', marginLeft: 15 }}>
+          <Text style={[styles.headerTitle, { color: titleColor, fontFamily: Fonts.rounded, transform: [{ scaleY: 1.15 }, { scaleX: 0.75 }] }]}>HANDLETURER</Text>
+        </View>
+        
+        {/* Tab Navigation */}
+        <View style={[styles.tabContainer, { backgroundColor: tabContainerBg }]}>
+          <TouchableOpacity 
+            style={[
+              styles.tab, 
+              { backgroundColor: activeTab === 'oktober' ? activeTabBg : inactiveTabBg }
+            ]}
+            onPress={() => setActiveTab('oktober')}
+          >
+            <Text style={[
+              styles.tabText,
+              { color: activeTab === 'oktober' ? activeTabTextColor : inactiveTabTextColor }
+            ]}>
+              Oktober
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.tab, 
+              { backgroundColor: activeTab === 'year' ? activeTabBg : inactiveTabBg }
+            ]}
+            onPress={() => setActiveTab('year')}
+          >
+            <Text style={[
+              styles.tabText,
+              { color: activeTab === 'year' ? activeTabTextColor : inactiveTabTextColor }
+            ]}>
+              Hittil i år
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.tab, 
+              { backgroundColor: activeTab === 'total' ? activeTabBg : inactiveTabBg }
+            ]}
+            onPress={() => setActiveTab('total')}
+          >
+            <Text style={[
+              styles.tabText,
+              { color: activeTab === 'total' ? activeTabTextColor : inactiveTabTextColor }
+            ]}>
+              Totalt
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.tab, 
+              { backgroundColor: activeTab === 'history' ? activeTabBg : inactiveTabBg }
+            ]}
+            onPress={() => setActiveTab('history')}
+          >
+            <Text style={[
+              styles.tabText,
+              { color: activeTab === 'history' ? activeTabTextColor : inactiveTabTextColor }
+            ]}>
+              Historikk
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Month Selector */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.monthScrollView}
+        contentContainerStyle={styles.monthScrollContent}
+      >
+        {MONTHS.map((month) => (
+          <TouchableOpacity
+            key={month}
+            style={styles.monthButton}
+            onPress={() => setSelectedMonth(month)}
+          >
+            <Text style={[
+              styles.monthText,
+              { 
+                color: selectedMonth === month ? '#555555' : '#999999',
+                fontWeight: selectedMonth === month ? '700' : '400'
+              }
+            ]}>
+              {month}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Content */}
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        <View style={[styles.card, { backgroundColor: cardBackground }]}>
+          <Text style={[styles.cardLabel, { color: subtleTextColor }]}>
+            Spart totalt
+          </Text>
+          <Text style={[styles.totalAmount, { color: titleColor, fontFamily: Fonts.rounded }]}>0 kr</Text>
+          
+          <View style={styles.detailsContainer}>
+            <View style={styles.detailRow}>
+              <View style={styles.detailLeft}>
+                <View style={[styles.iconCircle, { backgroundColor: '#DCE9F5' }]}>
+                  <Text style={styles.iconText}>%</Text>
+                </View>
+                <Text style={[styles.detailText, { color: textColor }]}>
+                  Priskutt i kassa
+                </Text>
+              </View>
+              <Text style={[styles.detailAmount, { color: textColor }]}>
+                0,00 kr
+              </Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <View style={styles.detailLeft}>
+                <View style={[styles.iconCircle, { backgroundColor: '#DCE9F5' }]}>
+                  <Text style={styles.iconText}>%</Text>
+                </View>
+                <Text style={[styles.detailText, { color: textColor }]}>
+                  Bonus tjent
+                </Text>
+              </View>
+              <Text style={[styles.detailAmount, { color: textColor }]}>
+                0,00 kr
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.summaryContainer}>
+            <Text style={[styles.summaryText, { color: subtleTextColor }]}>
+              Du har handlet for totalt
+            </Text>
+            <Text style={[styles.summaryAmount, { color: textColor }]}>
+              0,00 kr
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
   },
-  titleContainer: {
+  header: {
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    textAlign: 'left',
+    marginBottom: 18,
+    letterSpacing: 0.5,
+    lineHeight: 38,
+  },
+  tabContainer: {
     flexDirection: 'row',
-    gap: 8,
+    borderRadius: 20,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+  },
+  tabText: {
+    fontSize: 13,
+    textAlign: 'center',
+    fontWeight: '700',
+  },
+  monthScrollView: {
+    paddingHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 0,
+    flexGrow: 0,
+    maxHeight: 40,
+  },
+  monthScrollContent: {
+    gap: 10,
+    paddingRight: 20,
+  },
+  monthButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  monthText: {
+    fontSize: 14,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: 15,
+    paddingTop: 8,
+    paddingBottom: 15,
+  },
+  card: {
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  cardLabel: {
+    fontSize: 13,
+    fontWeight: '400',
+    marginBottom: 2,
+  },
+  totalAmount: {
+    fontSize: 39,
+    fontWeight: '900',
+    marginBottom: 20,
+  },
+  detailsContainer: {
+    paddingTop: 14,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  detailLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  iconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#A7C5E7',
+  },
+  iconText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  detailText: {
+    fontSize: 15,
+    fontWeight: '400',
+  },
+  detailAmount: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  summaryContainer: {
+    marginTop: 18,
+    paddingTop: 18,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#A7C5E7',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summaryText: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+  summaryAmount: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
