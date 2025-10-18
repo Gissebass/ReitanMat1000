@@ -161,34 +161,6 @@ export default function RemaScanToCartScreen() {
     [handleScanned]
   );
 
-  useEffect(() => {
-    let pollInterval: NodeJS.Timeout | null = null;
-    let lastProcessedImage: string = "";
-
-    const startPolling = async () => {
-      pollInterval = setInterval(async () => {
-        try {
-          const imgElement = await getLastImage();
-
-          if (imgElement && imgElement.src !== lastProcessedImage) {
-            lastProcessedImage = imgElement.src;
-            processImageFromScanner(imgElement);
-          }
-        } catch (error) {
-          console.warn("Failed to get image:", error);
-        }
-      }, 500);
-    };
-
-    startPolling();
-
-    return () => {
-      if (pollInterval) clearInterval(pollInterval);
-      imageQueueRef.current = [];
-      processingRef.current = false;
-    };
-  }, [processImageFromScanner]);
-
   const increment = (barcode: string) =>
     setCart((prev) => ({
       ...prev,
@@ -316,32 +288,13 @@ interface ScannerPanelProps {
 }
 
 function ScannerPanel({
-  lastImage,
-  isProcessing,
   manualBarcode,
   onManualChange,
   onManualSubmit,
 }: ScannerPanelProps) {
   return (
     <View style={styles.scannerWrap}>
-      <View style={styles.scannerHeader}>
-        <Text style={styles.scannerTitle}>STREKKODESKANNER</Text>
-        <Text style={styles.scannerHint}>
-          {isProcessing ? "Behandler bilde..." : "Lytter etter strekkoder…"}
-        </Text>
-      </View>
-
       <View style={styles.scannerBody}>
-        {lastImage ? (
-          <Image source={{ uri: lastImage }} style={styles.scanImage} />
-        ) : (
-          <View style={styles.scanImagePlaceholder}>
-            <Text style={styles.scanImagePlaceholderText}>
-              Siste bilde vises her
-            </Text>
-          </View>
-        )}
-
         <View style={styles.manualInputRow}>
           <TextInput
             placeholder="Skriv strekkode"
