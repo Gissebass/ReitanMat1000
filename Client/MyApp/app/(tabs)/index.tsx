@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const COLORS = {
   primary: "#013DA4",
@@ -52,18 +52,18 @@ export default function RemaHomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
+          source={require('@/assets/images/logos/REMA1000_horisontal_logo.png')}
           style={styles.headerTitle}
         />
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.searchButton}>
-            <Ionicons name="search" size={20} color={COLORS.primary} />
+            <IconSymbol name="magnifyingglass" size={20} color={COLORS.primary} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.cartButton}
             onPress={() => router.push('/shoppingcart')}
           >
-            <Ionicons name="cart-outline" size={20} color={COLORS.primary} />
+            <IconSymbol name="cart.fill" size={20} color={COLORS.primary} />
             {cartCount > 0 && (
               <View style={styles.cartBadge}>
                 <Text style={styles.cartBadgeText}>{cartCount}</Text>
@@ -111,7 +111,7 @@ export default function RemaHomeScreen() {
                 </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+            <IconSymbol name="chevron.forward" size={16} color={COLORS.primary} />
           </View>
         </View>
 
@@ -136,7 +136,7 @@ export default function RemaHomeScreen() {
                 <Text style={styles.promotionTitle}>{promo.title}</Text>
                 <Text style={styles.promotionSubtitle}>{promo.subtitle}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+              <IconSymbol name="chevron.forward" size={16} color={COLORS.primary} />
             </View>
           ))}
         </View>
