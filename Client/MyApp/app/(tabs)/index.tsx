@@ -39,7 +39,7 @@ export default function HomeScreen() {
       <ThemedView style={styles.stepContainer}>
         <Link href="/modal">
           <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+            <ThemedText type="subtitle">Step 2: Handletur</ThemedText>
           </Link.Trigger>
           <Link.Preview />
           <Link.Menu>
@@ -61,7 +61,7 @@ export default function HomeScreen() {
         </Link>
 
         <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+          {`Tap the Handletur tab to view your shopping trip savings and history.`}
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
