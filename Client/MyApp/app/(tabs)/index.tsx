@@ -29,7 +29,7 @@ export default function HomeScreen() {
   const promotions = [
     {
       id: 1,
-      title: "TIEN 25% BONUS PÅ ALLE",
+      title: "TJEN 25% BONUS PÅ ALLE VARER",
       subtitle: "Bonusoppdrag på R-nyheter",
       gradient: true,
     },
@@ -95,7 +95,7 @@ export default function HomeScreen() {
               <View>
                 <Text style={styles.bonusTitle}>Du har 0 bonuspoeng</Text>
                 <Text style={styles.bonusSubtitle}>
-                  Handla for 100 kr til for å få 10 poeng
+                  Handle for 100 kr til for å få 10 poeng
                 </Text>
               </View>
             </View>
@@ -144,10 +144,16 @@ export default function HomeScreen() {
             <Text style={styles.seeAll}>Se alle</Text>
           </View>
           <View style={styles.productCard}>
-            <View style={styles.productImage} />
+            <Image
+              source={{
+                uri: "https://www.rema.no/acd-cgi/img/v1/wordpress/wp-content/uploads/2021/02/5575568_Kjeldsberg-Kaffe-Hele-Bonner-500g-Hele-Bonner-500g_KJELDSBERG-KAFFEBRENNERI-AS_1N.png?width=371",
+              }}
+              style={styles.productImage}
+              resizeMode="contain"
+            />
             <View style={styles.productInfo}>
-              <Text style={styles.productName}>REMA 1000 Kaffe</Text>
-              <Text style={styles.productDesc}>Mørk brent, hele bønner</Text>
+              <Text style={styles.productName}>Kjeldsberg Kaffe</Text>
+              <Text style={styles.productDesc}>Hele bønner, 500g</Text>
               <View style={styles.priceContainer}>
                 <Text style={styles.productPrice}>89</Text>
                 <Text style={styles.priceUnit}>kr</Text>
@@ -161,9 +167,9 @@ export default function HomeScreen() {
           <View style={styles.featureCard}>
             <View style={styles.featureBg} />
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Handla smart med appen</Text>
+              <Text style={styles.featureTitle}>Handle smart med appen</Text>
               <Text style={styles.featureDesc}>
-                Få tilbud, sjekk priser og handla enkelt
+                Få tilbud, sjekk priser og handle enkelt
               </Text>
               <TouchableOpacity style={styles.featureButton}>
                 <Text style={styles.featureButtonText}>Lær mer</Text>
