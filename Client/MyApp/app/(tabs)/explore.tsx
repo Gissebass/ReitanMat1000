@@ -65,6 +65,28 @@ export function clearReceipts() {
   globalReceipts = [];
 }
 
+// Barcode Component
+function BarcodeDisplay() {
+  return (
+    <View style={styles.barcodeContainer}>
+      <View style={styles.barcode}>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((bar) => (
+          <View
+            key={bar}
+            style={[
+              styles.barcodeLine,
+              {
+                width: Math.random() * 4 + 2,
+                marginHorizontal: 2,
+              },
+            ]}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function HandleturScreen() {
   const colorScheme = useColorScheme();
   const [activeTab, setActiveTab] = useState<TabType>("oktober");
@@ -391,6 +413,11 @@ export default function HandleturScreen() {
                     {receipt.subtotal.toFixed(2)} kr
                   </Text>
                 </View>
+
+                {/* Barcode under receipt */}
+                <View style={styles.receiptBarcodeContainer}>
+                  <BarcodeDisplay />
+                </View>
               </View>
             ))}
           </View>
@@ -579,5 +606,24 @@ const styles = StyleSheet.create({
   receiptTotalAmount: {
     fontSize: 16,
     fontWeight: "700",
+  },
+  barcodeContainer: {
+    marginVertical: 16,
+  },
+  barcode: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  barcodeLine: {
+    height: 32,
+    backgroundColor: "#013DA4",
+  },
+  receiptBarcodeContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#A7C5E7",
+    alignItems: "center",
   },
 });
