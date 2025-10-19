@@ -57,7 +57,7 @@ const MOCK_CATALOG: Record<string, Product> = {
     price: 3.9,
     unit: "stk",
     imageUrl:
-      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=640&q=80&auto=format&fit=crop",
+      "https://w7.pngwing.com/pngs/332/204/png-transparent-banana-banana-natural-foods-food-fitness.png",
   },
   "7310865004703": {
     barcode: "7310865004703",
