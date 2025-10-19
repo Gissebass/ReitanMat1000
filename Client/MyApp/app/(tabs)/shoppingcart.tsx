@@ -17,7 +17,9 @@ import {
   Platform,
   SafeAreaView,
 } from "react-native";
+import { Audio } from "expo-av";
 import { RemaBrandHeader } from "@/components/ui/RemaBrandHeader";
+import { addReceipt } from "./explore";
 
 /**
  * Rema 1000 Shopping Cart - Brand Guidelines Compliant
@@ -39,6 +41,15 @@ export type CartLine = {
   qty: number;
 };
 
+type ReceiptItem = {
+  id: string;
+  name: string;
+  qty: number;
+  price: number;
+  total: number;
+  timestamp: Date;
+};
+
 const MOCK_CATALOG: Record<string, Product> = {
   "7039010021401": {
     barcode: "7039010021401",
@@ -50,15 +61,19 @@ const MOCK_CATALOG: Record<string, Product> = {
   },
   "7310865004703": {
     barcode: "7310865004703",
-    name: "Tine Lettmelk 1L",
-    price: 20.9,
+    name: "Freia Melkesjokolade 200g",
+    price: 39.9,
     unit: "stk",
+    imageUrl:
+      "https://images-tastehub.mdlzapps.cloud/images/0626d070-2ed5-4089-b582-65d8ad15af01.png",
   },
   "7039010061407": {
     barcode: "7039010061407",
-    name: "Spaghetti 500g",
-    price: 10.5,
+    name: "Coca Cola 1.5L",
+    price: 39.9,
     unit: "stk",
+    imageUrl:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVEMo2PG88Bz8Z_J9leN24mWA7pNF9l28Igw&s",
   },
 };
 
@@ -250,6 +265,43 @@ export default function RemaScanToCartScreen() {
   const undoStack = useRef<string[]>([]);
   const imageQueueRef = useRef<HTMLImageElement[]>([]);
   const processingRef = useRef(false);
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  // Initialize sound on mount
+  useEffect(() => {
+    const setupAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+        });
+        const { sound } = await Audio.Sound.createAsync(
+          require("@/assets/images/sounds/scan.mp3")
+        );
+        soundRef.current = sound;
+      } catch (error) {
+        console.warn("Failed to load sound", error);
+      }
+    };
+
+    setupAudio();
+
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
+    };
+  }, []);
+
+  const playCheckoutSound = async () => {
+    if (soundRef.current) {
+      try {
+        await soundRef.current.replayAsync();
+      } catch (error) {
+        console.warn("Sound playback failed", error);
+      }
+    }
+  };
 
   const { itemCount, subtotal } = useMemo(() => {
     const lines = Object.values(cart);
@@ -279,8 +331,11 @@ export default function RemaScanToCartScreen() {
       });
 
       undoStack.current.push(barcode);
+
+      // Play sound when item is added
+      await playCheckoutSound();
     },
-    []
+    [playCheckoutSound]
   );
 
   const processImageFromScanner = useCallback(
@@ -351,10 +406,8 @@ export default function RemaScanToCartScreen() {
     const trimmedBarcode = manualBarcode.trim();
 
     if (trimmedBarcode) {
-      // If there's text in the field, use it as barcode
       handleScanned(trimmedBarcode);
     } else {
-      // If field is empty, pick a random item from catalog
       const barcodes = Object.keys(MOCK_CATALOG);
       const randomBarcode =
         barcodes[Math.floor(Math.random() * barcodes.length)];
@@ -362,6 +415,46 @@ export default function RemaScanToCartScreen() {
     }
 
     setManualBarcode("");
+  };
+
+  const handleCheckout = async () => {
+    const data = Object.values(cart);
+
+    if (data.length === 0) {
+      Alert.alert("Handlekurv er tom", "Legg til varer før betaling");
+      return;
+    }
+
+    // Play checkout sound
+    await playCheckoutSound();
+
+    const receiptItems: ReceiptItem[] = data.map((item) => ({
+      id: `${item.product.barcode}-${Date.now()}-${Math.random()}`,
+      name: item.product.name,
+      qty: item.qty,
+      price: item.product.price,
+      total: round2(item.qty * item.product.price),
+      timestamp: new Date(),
+    }));
+
+    addReceipt(receiptItems, subtotal);
+
+    Alert.alert(
+      "Betaling fullført",
+      `Totalt: ${formatCurrency(
+        subtotal
+      )}\n\nKvitteringen er lagt til i Handleturer.`,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            clearCart();
+            undoStack.current = [];
+          },
+        },
+      ]
+    );
+    clearCart();
   };
 
   const data = Object.values(cart).sort((a, b) =>
@@ -412,12 +505,7 @@ export default function RemaScanToCartScreen() {
           )}
         />
 
-        <CheckoutBar
-          subtotal={subtotal}
-          onCheckout={() =>
-            Alert.alert("Betaling", "Her kobler du på betaling/kasse.")
-          }
-        />
+        <CheckoutBar subtotal={subtotal} onCheckout={handleCheckout} />
       </View>
     </SafeAreaView>
   );
